@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalentPulse Amsterdam - Enterprise PMO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ams-red: #ED1C24;
+            --ams-black: #000000;
+            --ams-white: #FFFFFF;
+            --ams-gray: #F3F3F3;
+        }
+        body { 
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          background-color: var(--ams-white);
+          color: var(--ams-black);
+          overflow-x: hidden;
+        }
+        .ams-shadow {
+            box-shadow: 10px 10px 0px rgba(0,0,0,1);
+        }
+        .ams-shadow-hover:hover {
+            box-shadow: 15px 15px 0px var(--ams-red);
+            transform: translate(-4px, -4px);
+        }
+        .ams-button-active:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px rgba(0,0,0,1);
+        }
+        .sidebar-scroll::-webkit-scrollbar {
+          width: 4px;
+        }
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+          background: #333;
+        }
+        h1, h2, h3, h4 {
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+        }
+        .grid-bg {
+            background-image: radial-gradient(#000 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.40.0",
+    "recharts": "https://esm.sh/recharts@^3.7.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "framer-motion": "https://esm.sh/framer-motion@^11.11.11",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="antialiased">
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
