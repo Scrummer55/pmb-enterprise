@@ -16,15 +16,15 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onSubmit, onCancel }) =
     phone: '',
     role: '',
     department: '',
-    status: EmployeeStatus.ONBOARDING,
-    joinDate: new Date().toISOString().split('T')[0],
-    currentProject: '',
-    skills: '',
-    ambitions: '',
-    availabilityHours: 0,
-    hourlyRate: 0,
-    performanceRating: 0,
-    achievements: '',
+//     status: EmployeeStatus.ONBOARDING,
+//     joinDate: new Date().toISOString().split('T')[0],
+//     currentProject: '',
+//     skills: '',
+//     ambitions: '',
+//     availabilityHours: 0,
+//     hourlyRate: 0,
+//     performanceRating: 0,
+//     achievements: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -34,19 +34,7 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onSubmit, onCancel }) =
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    const employee: Omit<Employee, 'id'> = {
-      ...formData,
-      skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean),
-      ambitions: formData.ambitions.split(',').map(a => a.trim()).filter(Boolean),
-      achievements: formData.achievements.split(',').map(a => a.trim()).filter(Boolean),
-      availabilityHours: Number(formData.availabilityHours),
-      hourlyRate: Number(formData.hourlyRate),
-      performanceRating: formData.performanceRating ? Number(formData.performanceRating) : undefined,
-      professionalJournal: [],
-    };
-
-    onSubmit(employee);
+    onSubmit(formData as any); // Temporary: alleen backend velden
   };
 
   return (
@@ -153,7 +141,8 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onSubmit, onCancel }) =
               />
             </div>
 
-            <div>
+            {/* Temporary uitgecommentarieerd - nog niet in backend model */}
+            {/* <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">Status *</label>
               <select
                 name="status"
@@ -167,9 +156,9 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onSubmit, onCancel }) =
                 <option value={EmployeeStatus.OFFBOARDING}>Offboarding</option>
                 <option value={EmployeeStatus.EXITED}>Exited</option>
               </select>
-            </div>
+            </div> */}
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">Startdatum *</label>
               <input
                 type="date"
@@ -179,9 +168,9 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onSubmit, onCancel }) =
                 required
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all"
               />
-            </div>
+            </div> */}
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">Huidig Project</label>
               <input
                 type="text"
@@ -190,9 +179,9 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onSubmit, onCancel }) =
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all"
               />
-            </div>
+            </div> */}
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">Beschikbare Uren *</label>
               <input
                 type="number"
@@ -204,9 +193,9 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onSubmit, onCancel }) =
                 step="0.5"
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all"
               />
-            </div>
+            </div> */}
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">Uurtarief (€) *</label>
               <input
                 type="number"
@@ -218,9 +207,9 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onSubmit, onCancel }) =
                 step="0.01"
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all"
               />
-            </div>
+            </div> */}
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">Performance Rating (0-5)</label>
               <input
                 type="number"
@@ -232,14 +221,14 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onSubmit, onCancel }) =
                 step="0.1"
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all"
               />
-            </div>
+            </div> */}
 
             {/* Skills & Ambities */}
-            <div className="md:col-span-2 mt-4">
+            {/* <div className="md:col-span-2 mt-4">
               <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Skills & Ontwikkeling</h3>
-            </div>
+            </div> */}
 
-            <div className="md:col-span-2">
+            {/* <div className="md:col-span-2">
               <label className="block text-sm font-bold text-slate-700 mb-2">Skills (comma-separated)</label>
               <textarea
                 name="skills"
@@ -249,9 +238,9 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onSubmit, onCancel }) =
                 placeholder="bijv. Projectmanagement, Agile, Stakeholdermanagement"
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all resize-none"
               />
-            </div>
+            </div> */}
 
-            <div className="md:col-span-2">
+            {/* <div className="md:col-span-2">
               <label className="block text-sm font-bold text-slate-700 mb-2">Ambities (comma-separated)</label>
               <textarea
                 name="ambitions"
@@ -261,9 +250,9 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onSubmit, onCancel }) =
                 placeholder="bijv. Senior Consultant, Teamleider"
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all resize-none"
               />
-            </div>
+            </div> */}
 
-            <div className="md:col-span-2">
+            {/* <div className="md:col-span-2">
               <label className="block text-sm font-bold text-slate-700 mb-2">Prestaties (comma-separated)</label>
               <textarea
                 name="achievements"
@@ -273,7 +262,7 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onSubmit, onCancel }) =
                 placeholder="bijv. Project of the Year 2023, Best Performer Q4"
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all resize-none"
               />
-            </div>
+            </div> */}
           </div>
 
           <div className="flex gap-4 mt-8 pt-6 border-t border-slate-100">
