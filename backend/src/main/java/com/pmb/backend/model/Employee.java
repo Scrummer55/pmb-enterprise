@@ -24,8 +24,10 @@ public class Employee {
 
     @Column(nullable = false, unique = true)
     private String email;
+    private String phone;
 
-    private String position;
+
+    private String role;
 
     private String department;
 }
