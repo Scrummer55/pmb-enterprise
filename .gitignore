@@ -12,6 +12,19 @@ dist
 dist-ssr
 *.local
 
+# Maven / Java
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/
+mvnw
+mvnw.cmd
+
+# Temporary files
+nul
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
