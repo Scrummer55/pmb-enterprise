@@ -12,6 +12,7 @@ import OnboardingForm from './components/OnboardingForm';
 import Personeelsmutaties from './components/Personeelsmutaties';
 import Teams from './components/Teams';
 import { storage } from './services/storageService';
+import { employeeService, EmployeeDTO } from './services/employeeService';
 import { Employee, Project, Match, Offer } from './types';
 import { INITIAL_OFFERS, PROJECTS } from './data/mockData';
 import { Bell, Search, Plus } from 'lucide-react';
