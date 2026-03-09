@@ -28,7 +28,30 @@ const App: React.FC = () => {
   const [showOnboardingForm, setShowOnboardingForm] = useState(false);
 
   useEffect(() => {
-    setEmployees(storage.getEmployees());
+    // Load employees from backend
+    const loadEmployees = async () => {
+      try {
+        const data = await employeeService.getAllEmployees();
+        // Convert backend EmployeeDTO to frontend Employee type
+        const mappedEmployees: Employee[] = data.map(emp => ({
+          id: emp.id?.toString() || '',
+          firstName: emp.firstName,
+          lastName: emp.lastName,
+          email: emp.email,
+          phone: emp.phone || '',
+          role: emp.role,
+          department: emp.department,
+          skills: [],
+          availability: 40,
+          hourlyRate: 0
+        }));
+        setEmployees(mappedEmployees);
+      } catch (error) {
+        console.error('Failed to load employees:', error);
+        notify('Fout bij laden medewerkers');
+      }
+    };
+    loadEmployees();
   }, []);
 
   const notify = (msg: string) => {
@@ -36,16 +59,32 @@ const App: React.FC = () => {
     setTimeout(() => setNotification(null), 4000);
   };
 
-  const handleAddEmployee = (employeeData: Omit<Employee, 'id'>) => {
-    const newEmployee: Employee = {
-      ...employeeData,
-      id: `emp-${Date.now()}`,
-    };
-    const updatedEmployees = [...employees, newEmployee];
-    setEmployees(updatedEmployees);
-    storage.saveEmployees(updatedEmployees);
-    setShowOnboardingForm(false);
-    notify("NIEUWE MEDEWERKER TOEGEVOEGD");
+  const handleAddEmployee = async (employeeData: Omit<Employee, 'id'>) => {
+    try {
+      // Create employee via backend API
+      const employeeDTO: Omit<EmployeeDTO, 'id'> = {
+        firstName: employeeData.firstName,
+        lastName: employeeData.lastName,
+        email: employeeData.email,
+        phone: employeeData.phone,
+        role: employeeData.role,
+        department: employeeData.department
+      };
+
+      const createdEmployee = await employeeService.createEmployee(employeeDTO);
+
+      // Add to local state
+      const newEmployee: Employee = {
+        id: createdEmployee.id?.toString() || '',
+        ...employeeData
+      };
+      setEmployees([...employees, newEmployee]);
+      setShowOnboardingForm(false);
+      notify("NIEUWE MEDEWERKER TOEGEVOEGD");
+    } catch (error) {
+      console.error('Failed to create employee:', error);
+      notify('Fout bij toevoegen medewerker');
+    }
   };
 
   const renderContent = () => {
