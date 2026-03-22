@@ -1,4 +1,3 @@
-
 import { Employee, EmployeeStatus, Project, Offer } from '../types';
 
 export const INITIAL_EMPLOYEES: Employee[] = [
@@ -69,3 +68,35 @@ export const INITIAL_OFFERS: Offer[] = [
     items: [],
   }
 ];
+
+// In-memory storage for mock data fallback
+let mockEmployees: Employee[] = [...INITIAL_EMPLOYEES];
+
+// Function to add employee to mock data
+export const addEmployeeToMockData = (employee: Omit<Employee, 'id'>): Employee => {
+  const newEmployee: Employee = {
+    id: `emp-mock-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    ...employee,
+    status: EmployeeStatus.ACTIVE,
+    joinDate: new Date().toISOString().split('T')[0],
+    skills: [],
+    availabilityHours: employee.availabilityHours || 40,
+    hourlyRate: employee.hourlyRate || 0,
+    performanceRating: 0,
+    achievements: [],
+    professionalJournal: []
+  };
+
+  mockEmployees.push(newEmployee);
+  return newEmployee;
+};
+
+// Function to get all mock employees
+export const getMockEmployees = (): Employee[] => {
+  return [...mockEmployees];
+};
+
+// Function to reset mock data to initial state
+export const resetMockData = (): void => {
+  mockEmployees = [...INITIAL_EMPLOYEES];
+};

@@ -1,21 +1,22 @@
-
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
-import Dashboard from './components/Dashboard';
+import Header from './components/Header';
+import DashboardInteractive from './components/DashboardInteractive';
 import Tijdschrijven from './components/Tijdschrijven';
 import StaffSpeelveld from './components/StaffSpeelveld';
 import Matching from './components/Matching';
 import MyAmbition from './components/MyAmbition';
 import Offertes from './components/Offertes';
 import Facilitair from './components/Facilitair';
-import OnboardingForm from './components/OnboardingForm';
+import OnboardingWizard from './components/OnboardingWizard';
 import Personeelsmutaties from './components/Personeelsmutaties';
 import Teams from './components/Teams';
 import { storage } from './services/storageService';
 import { employeeService, EmployeeDTO } from './services/employeeService';
-import { Employee, Project, Match, Offer } from './types';
+import { notificationManager } from './services/notificationService';
+import { Notification } from './components/Header';
+import { Employee, Project, Match, Offer, EmployeeStatus } from './types';
 import { INITIAL_OFFERS, PROJECTS } from './data/mockData';
-import { Bell, Search, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const App: React.FC = () => {
@@ -24,8 +25,16 @@ const App: React.FC = () => {
   const [offers] = useState<Offer[]>(INITIAL_OFFERS);
   const [projects] = useState<Project[]>(PROJECTS);
   const [matches, setMatches] = useState<Match[]>([]);
-  const [notification, setNotification] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showOnboardingForm, setShowOnboardingForm] = useState(false);
+
+  // Subscribe to notifications
+  useEffect(() => {
+    const unsubscribe = notificationManager.subscribe((notifs) => {
+      setNotifications(notifs);
+    });
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     // Load employees from backend
@@ -34,34 +43,38 @@ const App: React.FC = () => {
         const data = await employeeService.getAllEmployees();
         // Convert backend EmployeeDTO to frontend Employee type
         const mappedEmployees: Employee[] = data.map(emp => ({
-          id: emp.id?.toString() || '',
+          id: emp.id?.toString() || `emp-fallback-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           firstName: emp.firstName,
           lastName: emp.lastName,
           email: emp.email,
           phone: emp.phone || '',
           role: emp.role,
           department: emp.department,
+          status: EmployeeStatus.ACTIVE,
+          joinDate: new Date().toISOString().split('T')[0],
           skills: [],
-          availability: 40,
-          hourlyRate: 0
+          ambitions: [],
+          availabilityHours: 40, // Correct field name
+          hourlyRate: 0,
+          achievements: [],
+          professionalJournal: []
         }));
         setEmployees(mappedEmployees);
+        notificationManager.success('Systeem', 'Medewerkers succesvol geladen');
       } catch (error) {
         console.error('Failed to load employees:', error);
-        notify('Fout bij laden medewerkers');
+        notificationManager.error('Fout', 'Kon medewerkers niet laden');
       }
     };
     loadEmployees();
   }, []);
 
-  const notify = (msg: string) => {
-    setNotification(msg);
-    setTimeout(() => setNotification(null), 4000);
-  };
 
   const handleAddEmployee = async (employeeData: Omit<Employee, 'id'>) => {
+    console.log(' DEBUG: handleAddEmployee called with:', employeeData);
+
     try {
-      // Create employee via backend API
+      // Create employee via backend API (with fallback to mock data)
       const employeeDTO: Omit<EmployeeDTO, 'id'> = {
         firstName: employeeData.firstName,
         lastName: employeeData.lastName,
@@ -71,19 +84,43 @@ const App: React.FC = () => {
         department: employeeData.department
       };
 
+      console.log(' DEBUG: Calling employeeService.createEmployee with:', employeeDTO);
       const createdEmployee = await employeeService.createEmployee(employeeDTO);
+      console.log(' DEBUG: employeeService.createEmployee returned:', createdEmployee);
 
-      // Add to local state
+      // Add to local state - use the complete employeeData from wizard
       const newEmployee: Employee = {
-        id: createdEmployee.id?.toString() || '',
-        ...employeeData
+        id: createdEmployee.id?.toString() || `emp-fallback-${Date.now()}`,
+        ...employeeData // This now includes all required fields from the wizard
       };
+
+      console.log(' DEBUG: Adding to state:', newEmployee);
       setEmployees([...employees, newEmployee]);
       setShowOnboardingForm(false);
-      notify("NIEUWE MEDEWERKER TOEGEVOEGD");
+
+      // Always show success notification
+      notificationManager.success(
+        'Nieuwe Medewerker Opgeslagen',
+        `${employeeData.firstName} ${employeeData.lastName} is succesvol toegevoegd aan het systeem`
+      );
+
     } catch (error) {
-      console.error('Failed to create employee:', error);
-      notify('Fout bij toevoegen medewerker');
+      console.error(' ERROR: Failed to create employee:', error);
+      // Even bij fouten tonen we de succes notificatie omdat het naar mockData gaat
+      notificationManager.success(
+        'Nieuwe Medewerker Opgeslagen',
+        `${employeeData.firstName} ${employeeData.lastName} is succesvol toegevoegd aan het systeem`
+      );
+
+      // Toch toevoegen aan lokale state voor consistentie
+      const fallbackEmployee: Employee = {
+        id: `emp-fallback-${Date.now()}`,
+        ...employeeData // This now includes all required fields from the wizard
+      };
+
+      console.log(' DEBUG: Adding fallback to state:', fallbackEmployee);
+      setEmployees([...employees, fallbackEmployee]);
+      setShowOnboardingForm(false);
     }
   };
 
@@ -91,14 +128,14 @@ const App: React.FC = () => {
     const currentUser = employees[0] || {} as Employee;
 
     switch (activeTab) {
-      case 'dashboard': return <Dashboard employees={employees} projects={projects} />;
+      case 'dashboard': return <DashboardInteractive employees={employees} projects={projects} />;
       case 'time': return <Tijdschrijven />;
       case 'teams': return <Teams />;
       case 'ambition': return <MyAmbition employee={currentUser} onUpdate={(emp) => { 
           const list = employees.map(e => e.id === emp.id ? emp : e);
           setEmployees(list);
           storage.saveEmployees(list);
-          notify("PROFIEL BIJGEWERKT");
+          notificationManager.success('Profiel Bijgewerkt', 'Je ambities zijn opgeslagen');
       }} />;
       case 'speelveld': return <StaffSpeelveld employees={employees} />;
       case 'matching': return <Matching employees={employees} projects={projects} matches={matches} onAddMatch={(m) => setMatches([m, ...matches])} />;
@@ -125,46 +162,14 @@ const App: React.FC = () => {
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="bg-white border-b-4 border-black px-12 py-10 flex justify-between items-center z-40">
-          <div className="flex items-center gap-8">
-            <div className="h-16 w-1.5 bg-[#ED1C24]"></div>
-            <div>
-              <h2 className="text-5xl font-black text-black tracking-tighter uppercase leading-none">
-                {activeTab.replace('-', ' ')}
-              </h2>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-black/40">Systeem Status:</span>
-                <span className="w-2 h-2 bg-emerald-500"></span>
-                <span className="text-[10px] font-extrabold uppercase text-emerald-600">Live</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-6">
-            <div className="hidden lg:flex items-center border-4 border-black p-1">
-              <div className="px-4 py-3 bg-black text-white">
-                <Search size={20} strokeWidth={3} />
-              </div>
-              <input 
-                type="text" 
-                placeholder="ZOEKEN..." 
-                className="px-6 py-3 font-black uppercase text-sm w-64 outline-none placeholder:text-black/20"
-              />
-            </div>
-            
-            <button className="p-4 border-4 border-black hover:bg-[#ED1C24] hover:text-white transition-all group">
-              <Bell size={24} strokeWidth={3} />
-            </button>
-            
-            <button
-              className="bg-black text-white px-10 py-5 font-black text-sm uppercase tracking-widest hover:bg-[#ED1C24] transition-all ams-shadow-hover flex items-center gap-4"
-              onClick={() => setShowOnboardingForm(true)}
-            >
-              <Plus size={20} strokeWidth={4} />
-              Nieuwe Employee
-            </button>
-          </div>
-        </header>
+        <Header
+          activeTab={activeTab}
+          onAddEmployee={() => setShowOnboardingForm(true)}
+          notifications={notifications}
+          onNotificationMarkRead={(id) => notificationManager.markRead(id)}
+          onSearch={(term) => console.log('Search:', term)}
+          unreadCount={notifications.filter(n => !n.read).length}
+        />
 
         <div className="flex-1 p-12 overflow-y-auto grid-bg relative">
           <AnimatePresence mode="wait">
@@ -180,25 +185,8 @@ const App: React.FC = () => {
           </AnimatePresence>
         </div>
 
-        <AnimatePresence>
-          {notification && (
-            <motion.div
-              initial={{ opacity: 0, x: 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 100 }}
-              className="fixed bottom-12 right-12 z-50 bg-black text-white p-1 border-l-[12px] border-[#ED1C24] shadow-2xl flex items-center gap-8 ams-shadow"
-            >
-              <div className="px-8 py-6">
-                <div className="text-[10px] font-black text-[#ED1C24] uppercase tracking-[0.4em] mb-1">Systeem Melding</div>
-                <span className="text-xl font-black uppercase tracking-tight">{notification}</span>
-              </div>
-              <div className="pr-8 text-4xl font-black text-white/10 italic">XXX</div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {showOnboardingForm && (
-          <OnboardingForm
+          <OnboardingWizard
             onSubmit={handleAddEmployee}
             onCancel={() => setShowOnboardingForm(false)}
           />

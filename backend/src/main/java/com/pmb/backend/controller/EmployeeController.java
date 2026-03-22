@@ -21,15 +21,9 @@ public class EmployeeController {
 
     // GET all employees
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getAllEmployees() {
-        List<Employee> employees = employeeRepository.findAll();
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("count", employees.size());
-        response.put("data", employees);
-
-        return ResponseEntity.ok(response);
+    public List<Employee> getAllEmployees() {
+        // Geef direct de lijst terug, zodat de frontend een array ontvangt
+        return employeeRepository.findAll();
     }
 
     // GET single employee by ID
@@ -62,13 +56,31 @@ public class EmployeeController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-        Employee savedEmployee = employeeRepository.save(employee);
+        try {
+            Employee savedEmployee = employeeRepository.save(employee);
 
-        response.put("success", true);
-        response.put("message", "Employee created successfully");
-        response.put("data", savedEmployee);
+            response.put("success", true);
+            response.put("message", "Employee created successfully");
+            response.put("data", savedEmployee);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            String errorMessage = e.getMessage();
+            
+            // Check for unique constraint violation (duplicate email)
+            if (errorMessage != null && (errorMessage.contains("UNIQUE constraint failed") || 
+                errorMessage.contains("Unique index or primary key violation") ||
+                errorMessage.contains("unique constraint"))) {
+                response.put("success", false);
+                response.put("message", "Email '" + employee.getEmail() + "' is already in use");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+            
+            // Generic database error
+            response.put("success", false);
+            response.put("message", "Failed to create employee: " + errorMessage);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     // PUT update employee

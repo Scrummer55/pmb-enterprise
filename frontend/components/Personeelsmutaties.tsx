@@ -1,17 +1,39 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, Plus, Search, Filter, ArrowUpRight, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Mutation, MutationStatus } from '../types';
+import { Mutation, MutationStatus, Employee } from '../types';
+import { employeeService } from '../services/employeeService';
 
 const Personeelsmutaties: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [employees, setEmployees] = useState<Employee[]>([]);
 
     const mockMutations: Mutation[] = [
-        { id: 'MUT-001', employeeId: 'emp-1', type: 'Functiewijziging', effectiveDate: '2024-07-01', status: 'Verwerkt', description: 'Promotie naar Senior Projectleider', createdBy: 'HR Admin' },
-        { id: 'MUT-002', employeeId: 'emp-2', type: 'Salaris', effectiveDate: '2024-08-01', status: 'Ingediend', description: 'Periodieke verhoging schaal 11', createdBy: 'Manager A' },
-        { id: 'MUT-003', employeeId: 'emp-1', type: 'Contract', effectiveDate: '2024-09-01', status: 'Concept', description: 'Urenuitbreiding naar 36u', createdBy: 'HR Admin' },
+        { id: 'MUT-001', employeeId: '1', type: 'Functiewijziging', effectiveDate: '2024-07-01', status: 'Verwerkt', description: 'Promotie naar Senior Projectleider', createdBy: 'HR Admin' },
+        { id: 'MUT-002', employeeId: '2', type: 'Salaris', effectiveDate: '2024-08-01', status: 'Ingediend', description: 'Periodieke verhoging schaal 11', createdBy: 'Manager A' },
+        { id: 'MUT-003', employeeId: '1', type: 'Contract', effectiveDate: '2024-09-01', status: 'Concept', description: 'Urenuitbreiding naar 36u', createdBy: 'HR Admin' },
     ];
+
+    useEffect(() => {
+        const loadEmployees = async () => {
+            try {
+                const data = await employeeService.getAllEmployees();
+                setEmployees(data);
+            } catch (error) {
+                console.error('Failed to load employees:', error);
+            }
+        };
+        loadEmployees();
+    }, []);
+
+    const filteredMutations = mockMutations.filter(mut => {
+        const employee = employees.find(e => e.id === mut.employeeId);
+        const employeeName = employee ? `${employee.firstName} ${employee.lastName}`.toLowerCase() : '';
+        const lowerSearch = searchTerm.toLowerCase();
+        return mut.id.toLowerCase().includes(lowerSearch) ||
+               mut.type.toLowerCase().includes(lowerSearch) ||
+               employeeName.includes(lowerSearch);
+    });
 
     const getStatusUI = (status: MutationStatus) => {
         switch (status) {
@@ -49,6 +71,7 @@ const Personeelsmutaties: React.FC = () => {
                     <thead>
                         <tr className="bg-black text-white">
                             <th className="p-8 text-[11px] font-black uppercase tracking-[0.3em]">ID & Type</th>
+                            <th className="p-8 text-[11px] font-black uppercase tracking-[0.3em]">Medewerker</th>
                             <th className="p-8 text-[11px] font-black uppercase tracking-[0.3em]">Omschrijving</th>
                             <th className="p-8 text-[11px] font-black uppercase tracking-[0.3em]">Ingangsdatum</th>
                             <th className="p-8 text-[11px] font-black uppercase tracking-[0.3em] text-center">Status</th>
@@ -56,13 +79,18 @@ const Personeelsmutaties: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y-4 divide-black">
-                        {mockMutations.map((mut) => {
+                        {filteredMutations.map((mut) => {
                             const ui = getStatusUI(mut.status);
+                            const employee = employees.find(e => e.id === mut.employeeId);
+                            const employeeName = employee ? `${employee.firstName} ${employee.lastName}` : 'Onbekend';
                             return (
                                 <tr key={mut.id} className="hover:bg-slate-50 transition-colors">
                                     <td className="p-8">
                                         <div className="text-xl font-black uppercase tracking-tight">{mut.id}</div>
                                         <div className="text-[10px] font-bold text-[#ED1C24] uppercase tracking-widest mt-1">{mut.type}</div>
+                                    </td>
+                                    <td className="p-8">
+                                        <div className="text-sm font-bold text-black">{employeeName}</div>
                                     </td>
                                     <td className="p-8">
                                         <div className="text-sm font-bold text-black max-w-xs">{mut.description}</div>
