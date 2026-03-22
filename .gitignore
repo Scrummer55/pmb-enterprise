@@ -22,6 +22,11 @@ target/
 mvnw
 mvnw.cmd
 
+# H2 Database files (local dev data)
+pmbdb.mv.db
+pmbdb.trace.db
+*.h2.db
+
 # Temporary files
 nul
 
