@@ -36,7 +36,7 @@ const OnboardingForm: React.FC<OnboardingFormProps> = ({ onSubmit, onCancel }) =
     e.preventDefault();
     onSubmit(formData as any); // Temporary: alleen backend velden
   };
-
+// return a modal form for onboarding a new employee, with fields for personal and job-related information. The form should have a header with an icon and title, and buttons to submit or cancel the form. The form should be styled with Tailwind CSS for a modern look and feel.
   return (
     <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
